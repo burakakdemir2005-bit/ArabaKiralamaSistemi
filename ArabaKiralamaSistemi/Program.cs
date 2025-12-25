@@ -5,7 +5,7 @@ using ArabaKiralamaSistemi.Areas.Identity.Data;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// 1. Veritabanı Bağlantılarını Ayarla (SQLite)
+// 1. Veritabanı Bağlantıları
 var connectionString = builder.Configuration.GetConnectionString("ArabaKiralamaSistemiContext") ?? throw new InvalidOperationException("Connection string 'ArabaKiralamaSistemiContext' not found.");
 
 builder.Services.AddDbContext<ArabaKiralamaSistemiContext>(options =>
@@ -14,44 +14,59 @@ builder.Services.AddDbContext<ArabaKiralamaSistemiContext>(options =>
 builder.Services.AddDbContext<AuthContext>(options =>
     options.UseSqlite(builder.Configuration.GetConnectionString("AuthContextConnection") ?? connectionString));
 
-// 2. Identity (Kullanıcı Giriş) Ayarları
+// 2. Identity Ayarları
 builder.Services.AddDefaultIdentity<ArabaKiralamaSistemiUser>(options => options.SignIn.RequireConfirmedAccount = false)
     .AddRoles<IdentityRole>() // Rolleri aktif et
     .AddEntityFrameworkStores<AuthContext>();
 
-// 3. MVC Controller ve View'leri ekle
 builder.Services.AddControllersWithViews();
 builder.Services.AddRazorPages();
 
 var app = builder.Build();
 
-// --- RENDER İÇİN KESİN ÇÖZÜM: TABLOLARI EN BAŞTA OLUŞTUR ---
-// Bu blok uygulama çalışmaya başlamadan HEMEN ÖNCE veritabanını kurar.
+// --- RENDER İÇİN OTOMATİK ADMİN OLUŞTURMA (HİLE KODU) ---
 using (var scope = app.Services.CreateScope())
 {
     var services = scope.ServiceProvider;
     try
     {
-        // Önce Arabalar Veritabanı
+        // A. Tabloları Oluştur (Eğer yoksa)
         var context = services.GetRequiredService<ArabaKiralamaSistemiContext>();
         context.Database.EnsureCreated();
-
-        // Sonra Kullanıcı (Auth) Veritabanı
         var authContext = services.GetRequiredService<AuthContext>();
         authContext.Database.EnsureCreated();
 
-        // (İsteğe Bağlı) Otomatik Admin Rolü Ekleme
-        // Eğer veritabanı boşsa hata vermesin diye try-catch içinde kalsın
+        // B. Admin Rolü ve Yetkisi Ver (BURASI YENİ)
+        var roleManager = services.GetRequiredService<RoleManager<IdentityRole>>();
+        var userManager = services.GetRequiredService<UserManager<ArabaKiralamaSistemiUser>>();
+
+        // "Admin" rolü yoksa oluştur
+        if (!await roleManager.RoleExistsAsync("Admin"))
+        {
+            await roleManager.CreateAsync(new IdentityRole("Admin"));
+        }
+
+        // Senin E-postanı Bul ve Admin Yap
+        string benimMailim = "burakkakdemir453@gmail.com"; // BURASI SENİN MAİLİN
+        var user = await userManager.FindByEmailAsync(benimMailim);
+
+        if (user != null)
+        {
+            // Kullanıcı bulunduysa ona Admin rolü ver
+            if (!await userManager.IsInRoleAsync(user, "Admin"))
+            {
+                await userManager.AddToRoleAsync(user, "Admin");
+            }
+        }
     }
     catch (Exception ex)
     {
         var logger = services.GetRequiredService<ILogger<Program>>();
-        logger.LogError(ex, "Veritabanı oluşturulurken bir hata oluştu.");
+        logger.LogError(ex, "Veritabanı veya Admin yetkisi oluşturulurken hata çıktı.");
     }
 }
 // -------------------------------------------------------
 
-// 4. Middleware Ayarları (Standart)
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Home/Error");
@@ -63,8 +78,8 @@ app.UseStaticFiles();
 
 app.UseRouting();
 
-app.UseAuthentication(); // Giriş yapma (Önemli: Authorization'dan önce olmalı)
-app.UseAuthorization();  // Yetki kontrolü
+app.UseAuthentication();
+app.UseAuthorization();
 
 app.MapControllerRoute(
     name: "default",
