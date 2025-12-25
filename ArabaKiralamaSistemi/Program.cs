@@ -7,16 +7,30 @@ var builder = WebApplication.CreateBuilder(args);
 
 // --- 1. POSTGRESQL BAĞLANTISI ---
 // Render PostgreSQL bilgilerini tek tek parçalayarak sisteme tanıtıyoruz
-var connectionString = new Npgsql.NpgsqlConnectionStringBuilder()
+var databaseUrl = Environment.GetEnvironmentVariable("DATABASE_URL");
+var connectionString = "";
+
+if (string.IsNullOrEmpty(databaseUrl))
 {
-    Host = "dpg-d56qhi0gjchc73973arg-a.frankfurt-postgres.render.com",
-    Database = "araba_veritabani",
-    Username = "araba_veritabani_user",
-    Password = "NEUMjPs8i14GHthKX6Ll9SpCSqgRXIK5",
-    Port = 5432,
-    SslMode = Npgsql.SslMode.Require,
-    TrustServerCertificate = true
-}.ToString();
+    // Eğer Render üzerinde değilsek (Local test için eski yöntemi koru)
+    connectionString = new Npgsql.NpgsqlConnectionStringBuilder()
+    {
+        Host = "dpg-d56qhi0gjchc73973arg-a.frankfurt-postgres.render.com",
+        Database = "araba_veritabani",
+        Username = "araba_veritabani_user",
+        Password = "NEUMjPs8i14GHthKX6Ll9SpCSqgRXIK5",
+        Port = 5432,
+        SslMode = Npgsql.SslMode.Require,
+        TrustServerCertificate = true
+    }.ToString();
+}
+else
+{
+    // Render üzerindeysek linki otomatik ayrıştır
+    var databaseUri = new Uri(databaseUrl);
+    var userInfo = databaseUri.UserInfo.Split(':');
+    connectionString = $"Host={databaseUri.Host};Port={databaseUri.Port};Database={databaseUri.AbsolutePath.TrimStart('/')};Username={userInfo[0]};Password={userInfo[1]};SSL Mode=Require;Trust Server Certificate=true";
+}
 
 builder.Services.AddDbContext<ArabaKiralamaSistemiContext>(options =>
     options.UseNpgsql(connectionString));
