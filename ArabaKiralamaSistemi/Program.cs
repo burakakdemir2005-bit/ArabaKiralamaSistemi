@@ -23,6 +23,12 @@ builder.Services.AddControllersWithViews();
 builder.Services.AddRazorPages();
 
 var app = builder.Build();
+using (var scope = app.Services.CreateScope())
+{
+    var services = scope.ServiceProvider;
+    var context = services.GetRequiredService<ArabaKiralamaSistemiContext>();
+    context.Database.EnsureCreated();
+}
 
 // --- 3. OTOMATİK VERİTABANI VE ADMİN KURULUMU ---
 using (var scope = app.Services.CreateScope())
