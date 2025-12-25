@@ -6,8 +6,8 @@ using ArabaKiralamaSistemi.Areas.Identity.Data;
 var builder = WebApplication.CreateBuilder(args);
 
 // --- 1. POSTGRESQL BAĞLANTISI ---
-// Render PostgreSQL bilgilerini tek tek parçalayarak sisteme tanıtıyoruz
 var connectionString = "Host=dpg-d56qhi0gjchc73973arg-a.frankfurt-postgres.render.com;Port=5432;Database=araba_veritabani;Username=araba_veritabani_user;Password=NEUMjPs8i14GHthKX6Li9SpCSqgRXIK5;SSL Mode=Require;Trust Server Certificate=true";
+
 builder.Services.AddDbContext<ArabaKiralamaSistemiContext>(options =>
     options.UseNpgsql(connectionString));
 
@@ -23,34 +23,32 @@ builder.Services.AddControllersWithViews();
 builder.Services.AddRazorPages();
 
 var app = builder.Build();
-using (var scope = app.Services.CreateScope())
-{
-    var services = scope.ServiceProvider;
-    var context = services.GetRequiredService<ArabaKiralamaSistemiContext>();
-    context.Database.EnsureCreated();
-}
 
-// --- 3. OTOMATİK VERİTABANI VE ADMİN KURULUMU ---
+// --- 3. OTOMATİK VERİTABANI, TABLO VE ADMİN KURULUMU (TEK BLOK) ---
 using (var scope = app.Services.CreateScope())
 {
     var services = scope.ServiceProvider;
     try
     {
         var context = services.GetRequiredService<ArabaKiralamaSistemiContext>();
-        context.Database.EnsureCreated();
         var authContext = services.GetRequiredService<AuthContext>();
+
+        // Tablolar yoksa Render üzerinde otomatik oluşturur
+        context.Database.EnsureCreated();
         authContext.Database.EnsureCreated();
 
+        // Admin Rolü Oluşturma
         var roleManager = services.GetRequiredService<RoleManager<IdentityRole>>();
         if (!await roleManager.RoleExistsAsync("Admin"))
         {
             await roleManager.CreateAsync(new IdentityRole("Admin"));
         }
 
+        // Admin Kullanıcısı Oluşturma
         var userManager = services.GetRequiredService<UserManager<ArabaKiralamaSistemiUser>>();
         string email = "burakkakdemirr453@gmail.com";
-
         var user = await userManager.FindByEmailAsync(email);
+
         if (user == null)
         {
             user = new ArabaKiralamaSistemiUser
@@ -62,6 +60,7 @@ using (var scope = app.Services.CreateScope())
             await userManager.CreateAsync(user, "Burak123!");
         }
 
+        // Kullanıcıya Admin Yetkisi Verme
         if (!await userManager.IsInRoleAsync(user, "Admin"))
         {
             await userManager.AddToRoleAsync(user, "Admin");
@@ -70,10 +69,11 @@ using (var scope = app.Services.CreateScope())
     catch (Exception ex)
     {
         var logger = services.GetRequiredService<ILogger<Program>>();
-        logger.LogError(ex, "Veritabanı kurulum hatası!");
+        logger.LogError(ex, "Veritabanı veya Admin kurulumunda hata oluştu!");
     }
 }
 
+// --- 4. MIDDLEWARE AYARLARI ---
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Home/Error");
@@ -85,6 +85,10 @@ app.UseStaticFiles();
 app.UseRouting();
 app.UseAuthentication();
 app.UseAuthorization();
-app.MapControllerRoute(name: "default", pattern: "{controller=Home}/{action=Index}/{id?}");
+
+app.MapControllerRoute(
+    name: "default",
+    pattern: "{controller=Home}/{action=Index}/{id?}");
 app.MapRazorPages();
+
 app.Run();
