@@ -1,0 +1,90 @@
+﻿@model ArabaKiralamaSistemi.Models.Car
+
+@{
+    ViewData["Title"] = "Araç Detayı";
+}
+
+<div class="container" style="margin-top: 50px; margin-bottom: 100px;">
+
+    <a asp-action="Index" class="btn btn-outline-light mb-4">
+        &larr; Araç Listesine Dön
+    </a>
+
+    <div class="card shadow-lg border-0 overflow-hidden" style="border-radius: 20px;">
+        <div class="row g-0">
+
+            <div class="col-md-7 bg-dark d-flex align-items-center justify-content-center" style="min-height: 500px; background: radial-gradient(circle, #2c3e50 0%, #000000 100%);">
+                <img src="@Model.ImageUrl" alt="@Model.Brand @Model.Model"
+                     class="img-fluid shadow-lg"
+                     style="max-height: 480px; max-width: 100%; object-fit: contain; border-radius: 10px;">
+            </div>
+
+            <div class="col-md-5 bg-white text-dark p-5 d-flex flex-column justify-content-center">
+
+                <div class="mb-4">
+                    <span class="badge bg-primary px-3 py-2" style="font-size: 0.9rem;">@Model.Year Model</span>
+
+                    @if (Model.IsAvailable)
+                    {
+                        <span class="badge bg-success px-3 py-2 ms-2" style="font-size: 0.9rem;">Kiralamaya Uygun</span>
+                    }
+                    else
+                    {
+                        <span class="badge bg-danger px-3 py-2 ms-2" style="font-size: 0.9rem;">Şu an Kirada</span>
+                    }
+                </div>
+
+                <h1 class="fw-bold display-5 mb-2">@Model.Brand @Model.Model</h1>
+
+                <p class="text-muted fs-5 mb-4">Plaka: @Model.Plate</p>
+
+                <hr class="text-muted my-4">
+
+                <div class="row mb-5">
+                    <div class="col-6 mb-3">
+                        <small class="text-muted d-block">Vites Tipi</small>
+                        <strong>Otomatik</strong>
+                    </div>
+                    <div class="col-6 mb-3">
+                        <small class="text-muted d-block">Yakıt</small>
+                        <strong>Dizel/Benzin</strong>
+                    </div>
+                    <div class="col-6">
+                        <small class="text-muted d-block">Kasa Tipi</small>
+                        <strong>Sedan/Sport</strong>
+                    </div>
+                    <div class="col-6">
+                        <small class="text-muted d-block">Motor Gücü</small>
+                        <strong>2.0L Turbo</strong>
+                    </div>
+                </div>
+
+                <div class="d-flex align-items-center justify-content-between mt-auto">
+                    <div>
+                        <small class="text-muted">Günlük Kiralama Bedeli</small>
+                        <h2 class="text-primary fw-bold mb-0">@Model.DailyPrice ₺</h2>
+                    </div>
+
+                    @if (Model.IsAvailable)
+                    {
+                        <a asp-controller="Rentals" asp-action="Rent" asp-route-carId="@Model.Id" class="btn btn-primary btn-lg px-5 fw-bold shadow">
+                            HEMEN KİRALA
+                        </a>
+                    }
+                    else
+                    {
+                        <button class="btn btn-secondary btn-lg px-5" disabled>BU ARAÇ KİRADA 🚫</button>
+                    }
+                </div>
+                @if (User.IsInRole("Admin"))
+                {
+                    <div class="mt-4 pt-3 border-top text-center">
+                        <small class="text-muted d-block mb-2">Yönetici İşlemleri</small>
+                        <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-sm btn-warning px-3">Düzenle</a>
+                        <a asp-action="Delete" asp-route-id="@Model.Id" class="btn btn-sm btn-danger px-3">Sil</a>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>

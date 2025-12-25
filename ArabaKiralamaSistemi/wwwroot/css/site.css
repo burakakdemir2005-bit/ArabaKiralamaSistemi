@@ -1,0 +1,118 @@
+/* --- GENEL AYARLAR --- */
+html, body {
+    height: 100%;
+    margin: 0;
+    font-family: 'Poppins', sans-serif;
+}
+
+body {
+    /* Derin gece mavisi arka plan */
+    background: linear-gradient(135deg, #141e30, #243b55);
+    color: #ffffff !important;
+    min-height: 100vh;
+}
+
+/* Linkler */
+a {
+    text-decoration: none;
+    color: #4facfe;
+    transition: 0.3s;
+}
+
+    a:hover {
+        color: #00f2fe;
+        text-shadow: 0 0 10px #00f2fe;
+    }
+
+/* --- NAVBAR (ÜST MENÜ) --- */
+.navbar {
+    background: rgba(0, 0, 0, 0.6) !important;
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+}
+
+.navbar-brand, .nav-link {
+    color: #fff !important;
+    font-weight: 600;
+}
+
+    .nav-link:hover {
+        color: #00f2fe !important;
+        transform: scale(1.1); /* Menü linkleri de büyüsün */
+    }
+
+/* --- TABLO TASARIMI (Listeleme Ekraný) --- */
+.table {
+    color: #ffffff !important;
+    background-color: rgba(0, 0, 0, 0.4);
+    border-radius: 15px;
+    margin-top: 20px;
+    /* Tablonun sýnýrlarý dýþýna taþan efektlerin görünmesi için: */
+    border-collapse: separate;
+    border-spacing: 0 5px; /* Satýrlar arasý azýcýk boþluk olsun */
+}
+
+    .table thead th {
+        background: linear-gradient(90deg, #1cb5e0, #000851);
+        color: white !important;
+        border: none;
+        padding: 15px;
+    }
+
+    .table tbody tr {
+        transition: all 0.3s ease; /* Yumuþak geçiþ */
+        background-color: rgba(255,255,255,0.02); /* Çok hafif belli olsun */
+    }
+
+    .table tbody td {
+        color: #ffffff !important;
+        vertical-align: middle;
+        border: none; /* Çizgileri kaldýr, daha modern dursun */
+    }
+
+/* --- ÝÞTE BURASI: TABLO SATIRI BÜYÜME EFEKTÝ --- */
+.table-hover tbody tr:hover {
+    transform: scale(1.02); /* %2 Büyü */
+    background-color: rgba(255, 255, 255, 0.15); /* Rengi açýlsýn */
+    box-shadow: 0 0 15px rgba(0, 242, 254, 0.3); /* Arkasýna neon ýþýk at */
+    z-index: 10;
+    position: relative; /* Üste çýkmasý için gerekli */
+}
+
+    .table-hover tbody tr:hover td {
+        color: #00f2fe !important; /* Yazýlar neon mavi olsun */
+    }
+
+/* --- RESÝMLER (Büyüme Efekti Geri Döndü) --- */
+img {
+    border-radius: 8px;
+    border: 2px solid rgba(255,255,255,0.3);
+    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); /* Yaylanarak büyüsün */
+    background-color: #fff
+    /* --- FOOTER DÜZELTMESÝ --- */
+    footer, .border-top
+
+{
+    border: none !important; /* Kenarlýðý zorla kaldýr */
+}
+
+.footer {
+    background-color: transparent; /* Arka plan þeffaf olsun */
+    color: rgba(255,255,255,0.5); /* Yazý silik beyaz olsun */
+
+}
+/* Footer'ý en alta sabitleme ayarý */
+body {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh; /* Sayfa yüksekliði en az ekran kadar olsun */
+}
+
+main {
+    flex: 1; /* Ýçerik alaný kalan tüm boþluðu kaplasýn */
+}
+
+footer {
+    flex-shrink: 0; /* Footer küçülmesin */
+}

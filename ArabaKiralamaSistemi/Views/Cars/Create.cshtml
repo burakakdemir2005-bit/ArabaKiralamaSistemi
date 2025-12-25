@@ -1,0 +1,92 @@
+﻿@model ArabaKiralamaSistemi.Models.Car
+
+@{
+    ViewData["Title"] = "Yeni Araç Ekle";
+}
+
+<div class="container" style="margin-top: 50px; margin-bottom: 50px;">
+
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+
+            <div class="card shadow-lg border-0" style="border-radius: 20px; overflow: hidden;">
+                <div class="card-header bg-primary text-white p-4">
+                    <h3 class="fw-bold mb-0"><i class="bi bi-plus-circle-fill me-2"></i>Yeni Araç Ekle</h3>
+                    <p class="mb-0 opacity-75">Filoya yeni bir araç eklemek için bilgileri doldurun.</p>
+                </div>
+
+                <div class="card-body p-5 bg-light">
+                    <form asp-action="Create">
+                        <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label asp-for="Brand" class="form-label fw-bold text-dark">Marka</label>
+                                <input asp-for="Brand" class="form-control form-control-lg" placeholder="Örn: BMW" />
+                                <span asp-validation-for="Brand" class="text-danger"></span>
+                            </div>
+                            <div class="col-md-6">
+                                <label asp-for="Model" class="form-label fw-bold text-dark">Model</label>
+                                <input asp-for="Model" class="form-control form-control-lg" placeholder="Örn: i8" />
+                                <span asp-validation-for="Model" class="text-danger"></span>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label asp-for="Plate" class="form-label fw-bold text-dark">Plaka</label>
+                                <input asp-for="Plate" class="form-control form-control-lg" placeholder="34 ABC 123" />
+                                <span asp-validation-for="Plate" class="text-danger"></span>
+                            </div>
+                            <div class="col-md-6">
+                                <label asp-for="Year" class="form-label fw-bold text-dark">Model Yılı</label>
+                                <input asp-for="Year" class="form-control form-control-lg" type="number" value="2025" />
+                                <span asp-validation-for="Year" class="text-danger"></span>
+                            </div>
+
+                            <div class="col-12">
+                                <label asp-for="ImageUrl" class="form-label fw-bold text-dark">Resim Bağlantısı (URL)</label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-white"><i class="bi bi-link-45deg"></i></span>
+                                    <input asp-for="ImageUrl" class="form-control form-control-lg" placeholder="https://..." />
+                                </div>
+                                <div class="form-text">İnternetten bulduğunuz resmin bağlantısını buraya yapıştırın.</div>
+                                <span asp-validation-for="ImageUrl" class="text-danger"></span>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label asp-for="DailyPrice" class="form-label fw-bold text-dark">Günlük Ücret (₺)</label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-white">₺</span>
+                                    <input asp-for="DailyPrice" class="form-control form-control-lg" type="number" step="0.01" />
+                                </div>
+                                <span asp-validation-for="DailyPrice" class="text-danger"></span>
+                            </div>
+
+                            <div class="col-md-6 d-flex align-items-center">
+                                <div class="form-check form-switch mt-4 ms-2">
+                                    <input class="form-check-input" type="checkbox" asp-for="IsAvailable" checked style="transform: scale(1.5);">
+                                    <label class="form-check-label ms-2 fw-bold text-dark" asp-for="IsAvailable">
+                                        Araç Kiralamaya Uygun
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <hr class="my-4">
+
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                            <a asp-action="Index" class="btn btn-outline-secondary px-4 py-2">İptal</a>
+                            <button type="submit" class="btn btn-primary btn-lg px-5 py-2 shadow-sm">Kaydet</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

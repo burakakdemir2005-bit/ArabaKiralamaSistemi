@@ -1,0 +1,87 @@
+﻿@model IEnumerable<ArabaKiralamaSistemi.Models.Rental>
+
+@{
+    ViewData["Title"] = "Kiralama Yönetimi";
+}
+
+<div class="container mt-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="fw-bold text-primary"><i class="bi bi-shield-lock-fill me-2"></i>Kiralama Yönetim Paneli</h2>
+        <span class="badge bg-warning text-dark fs-6 px-3 py-2">Sadece Admin</span>
+    </div>
+
+    <div class="card shadow border-0 overflow-hidden">
+        <div class="card-header bg-dark text-white p-3">
+            <h5 class="mb-0">Aktif ve Geçmiş Kiralamalar</h5>
+        </div>
+        <div class="card-body p-0">
+            <table class="table table-hover table-striped mb-0 text-center align-middle">
+                <thead class="bg-light border-bottom">
+                    <tr>
+                        <th class="p-3">Araç Bilgisi</th>
+                        <th class="p-3">Plaka</th>
+                        <th class="p-3">Tarihler</th>
+                        <th class="p-3">Tutar</th>
+                        <th class="p-3">Durum</th>
+                        <th class="p-3">İşlem</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model)
+                    {
+                        <tr>
+                            <td class="text-start ps-4">
+                                <div class="d-flex align-items-center">
+                                    <div class="bg-white p-1 border rounded me-3" style="width: 50px; height: 35px;">
+                                        @if (item.Car != null)
+                                        {
+                                            <img src="@item.Car.ImageUrl" style="width:100%; height:100%; object-fit:contain;">
+                                        }
+                                    </div>
+                                    <span class="fw-bold text-dark">
+                                        @(item.Car != null ? item.Car.Brand + " " + item.Car.Model : "Silinmiş Araç")
+                                    </span>
+                                </div>
+                            </td>
+
+                            <td><span class="badge bg-secondary">@(item.Car != null ? item.Car.Plate : "-")</span></td>
+
+                            <td class="small">
+                                <div class="text-muted"><i class="bi bi-arrow-right-circle me-1"></i>@item.RentDate.ToShortDateString()</div>
+                                <div class="text-muted"><i class="bi bi-arrow-left-circle-fill me-1"></i>@item.ReturnDate.ToShortDateString()</div>
+                            </td>
+
+                            <td class="fw-bold text-primary">@item.TotalPrice.ToString("N2") ₺</td>
+
+                            <td>
+                                @if (item.Car != null && !item.Car.IsAvailable)
+                                {
+                                    <span class="badge bg-danger bg-opacity-10 text-danger border border-danger px-3 py-1 rounded-pill">🔴 Kirada</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-success bg-opacity-10 text-success border border-success px-3 py-1 rounded-pill">🟢 Teslim Alındı</span>
+                                }
+                            </td>
+
+                            <td>
+                                @if (item.Car != null && !item.Car.IsAvailable)
+                                {
+                                    <form asp-action="ReturnCar" asp-route-id="@item.Id" method="post">
+                                        <button type="submit" class="btn btn-sm btn-primary shadow-sm fw-bold px-3">
+                                            🔄 Teslim Al
+                                        </button>
+                                    </form>
+                                }
+                                else
+                                {
+                                    <span class="text-muted small"><i class="bi bi-check-circle-fill text-success"></i> İşlem Tamam</span>
+                                }
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

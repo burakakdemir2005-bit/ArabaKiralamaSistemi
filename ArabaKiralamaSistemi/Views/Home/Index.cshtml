@@ -1,0 +1,159 @@
+﻿@{
+    ViewData["Title"] = "Ana Sayfa";
+}
+
+<div class="hero-section text-center text-white d-flex align-items-center justify-content-center">
+    <div class="container position-relative" style="z-index: 2;">
+        <h1 class="display-1 fw-bold mb-3 neon-text">HIZIN ADRESİ</h1>
+        <p class="lead mb-4" style="font-size: 1.5rem; text-shadow: 0 2px 5px rgba(0,0,0,0.5);">
+            Hayalindeki aracı şimdi kirala, yolların hakimi sen ol.
+        </p>
+        <a asp-controller="Cars" asp-action="Index" class="btn btn-primary btn-lg px-5 py-3 mt-3 animate-btn">
+            ARAÇLARI İNCELE
+        </a>
+    </div>
+    <div class="overlay"></div>
+</div>
+
+<div class="container mt-5">
+    <div class="row text-center">
+        <div class="col-md-4 mb-4">
+            <div class="feature-card p-4">
+                <h3 class="mb-3">Lüks Araçlar</h3>
+                <p>En yeni model, konforlu ve prestijli araç filosu.</p>
+            </div>
+        </div>
+        <div class="col-md-4 mb-4">
+            <div class="feature-card p-4">
+                <h3 class="mb-3">Hızlı Teslimat</h3>
+                <p>İşlemlerle vakit kaybetme, aracını hemen teslim al.</p>
+            </div>
+        </div>
+        <div class="col-md-4 mb-4">
+            <div class="feature-card p-4">
+                <h3 class="mb-3">Güvenli Kiralama</h3>
+                <p>7/24 Destek ve tam kasko güvencesiyle yola çık.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container" style="margin-top: 100px; margin-bottom: 100px;">
+    <h2 class="text-center mb-5 text-white" style="font-weight: bold;">Popüler Araçlar</h2>
+
+    <div class="row">
+        <div class="col-md-4 mb-4">
+            <div class="card shadow border-0 h-100" style="border-radius: 15px; overflow: hidden;">
+                <img src="https://i.pinimg.com/1200x/d4/f8/ac/d4f8aca9915abef92b79d70683bbf907.jpg
+" class="card-img-top" alt="BMW i8" style="height: 250px; object-fit: cover;">
+                <div class="card-body bg-white text-dark">
+                    <h5 class="card-title fw-bold">BMW i8</h5>
+                    <p class="card-text text-muted">Otomatik • Dizel • 2023</p>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <span class="fs-5 fw-bold text-primary">3500 ₺ <small class="fs-6 text-muted">/ Gün</small></span>
+                        <a href="#" class="btn btn-primary px-4" style="border-radius: 20px;">Kirala</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4 mb-4">
+            <div class="card shadow border-0 h-100" style="border-radius: 15px; overflow: hidden;">
+                <img src="https://i.pinimg.com/1200x/54/f5/33/54f533f2c56bdf6902ed85d93ea68464.jpg" class="card-img-top" alt="Mercedes C200" style="height: 250px; object-fit: cover;">
+                <div class="card-body bg-white text-dark">
+                    <h5 class="card-title fw-bold">Mercedes C200 AMG</h5>
+                    <p class="card-text text-muted">Otomatik • Benzin • 2024</p>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <span class="fs-5 fw-bold text-primary">4200 ₺ <small class="fs-6 text-muted">/ Gün</small></span>
+                        <a href="#" class="btn btn-primary px-4" style="border-radius: 20px;">Kirala</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4 mb-4">
+            <div class="card shadow border-0 h-100" style="border-radius: 15px; overflow: hidden;">
+                <img src="https://images.unsplash.com/photo-1606664515524-ed2f786a0bd6?auto=format&fit=crop&w=600&q=80" class="card-img-top" alt="Audi A6" style="height: 250px; object-fit: cover;">
+                <div class="card-body bg-white text-dark">
+                    <h5 class="card-title fw-bold">Audi A6</h5>
+                    <p class="card-text text-muted">Otomatik • Dizel • 2022</p>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <span class="fs-5 fw-bold text-primary">3800 ₺ <small class="fs-6 text-muted">/ Gün</small></span>
+                        <a href="#" class="btn btn-primary px-4" style="border-radius: 20px;">Kirala</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* Hero Bölümü */
+    .hero-section {
+        background-image: url('https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?q=80&w=1920&auto=format&fit=crop');
+        background-size: cover;
+        background-position: center;
+        height: 60vh;
+        position: relative;
+        border-radius: 20px;
+        box-shadow: 0 0 30px rgba(0,0,0,0.5);
+        overflow: hidden;
+        margin-bottom: 50px;
+    }
+
+    .overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(to bottom, rgba(0,0,0,0.3), rgba(15, 12, 41, 1));
+        z-index: 1;
+    }
+
+    .neon-text {
+        text-shadow: 0 0 10px #00f2fe, 0 0 20px #00f2fe, 0 0 40px #00f2fe;
+        letter-spacing: 3px;
+    }
+
+    .feature-card {
+        background: rgba(255, 255, 255, 0.05);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 20px;
+        transition: 0.4s;
+        color: white;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+    }
+
+        .feature-card:hover {
+            transform: translateY(-10px);
+            background: rgba(255, 255, 255, 0.1);
+            border-color: #00f2fe;
+            box-shadow: 0 0 30px rgba(0, 242, 254, 0.3);
+        }
+
+    .animate-btn {
+        animation: pulse 2s infinite;
+    }
+
+    @@keyframes pulse {
+        0%
+
+    {
+        transform: scale(1);
+    }
+
+    50% {
+        transform: scale(1.05);
+    }
+
+    100% {
+        transform: scale(1);
+    }
+
+    }
+</style>

@@ -1,0 +1,105 @@
+﻿@model ArabaKiralamaSistemi.Models.Rental
+
+@{
+    ViewData["Title"] = "Araç Kiralama";
+}
+
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow-lg border-0 rounded-4 overflow-hidden">
+                <div class="card-header bg-primary text-white p-4 text-center">
+                    <h3 class="fw-bold mb-0">Kiralama İşlemini Tamamla</h3>
+                    <p class="mb-0 opacity-75">Harika bir seçim! Tarihleri belirle ve aracı ayırt.</p>
+                </div>
+
+                <div class="card-body p-5">
+
+                    <div class="d-flex align-items-center bg-light p-3 rounded-3 mb-4 border">
+                        <img src="@Model.Car.ImageUrl" alt="Car Image" class="rounded-3 shadow-sm" style="width: 120px; height: 80px; object-fit: cover;">
+                        <div class="ms-3">
+                            <h4 class="fw-bold text-dark mb-1">@Model.Car.Brand @Model.Car.Model</h4>
+                            <span class="badge bg-secondary">Günlük: @Model.Car.DailyPrice ₺</span>
+                        </div>
+                    </div>
+
+                    <form asp-action="Rent">
+                        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+                        <input type="hidden" asp-for="CarId" />
+
+                        <div class="row g-4">
+                            <div class="col-md-6">
+                                <label asp-for="RentDate" class="form-label fw-bold">Alış Tarihi</label>
+                                <input asp-for="RentDate" class="form-control form-control-lg date-input" id="rentDate" type="date" />
+                                <span asp-validation-for="RentDate" class="text-danger"></span>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label asp-for="ReturnDate" class="form-label fw-bold">İade Tarihi</label>
+                                <input asp-for="ReturnDate" class="form-control form-control-lg date-input" id="returnDate" type="date" />
+                                <span asp-validation-for="ReturnDate" class="text-danger"></span>
+                            </div>
+                        </div>
+
+                        <div class="alert alert-info mt-4 d-flex justify-content-between align-items-center">
+                            <span><i class="bi bi-calculator me-2"></i>Tahmini Toplam Tutar:</span>
+                            <span class="fs-4 fw-bold text-primary" id="totalPriceDisplay">0,00 ₺</span>
+                        </div>
+
+                        <div class="d-grid gap-2 mt-4">
+                            <button type="submit" class="btn btn-success btn-lg py-3 fw-bold shadow-sm">
+                                ✅ KİRALAMAYI ONAYLA
+                            </button>
+                            <a asp-controller="Cars" asp-action="Index" class="btn btn-outline-secondary">İptal Et</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // 1. Fiyatı sunucudan yazı olarak alıyoruz
+    var rawPrice = "@Model.Car.DailyPrice";
+
+    // 2. Virgülü noktaya çevirip sayıya dönüştürüyoruz (3800,00 -> 3800.00)
+    var dailyPrice = parseFloat(rawPrice.replace(',', '.'));
+
+    const rentInput = document.getElementById("rentDate");
+    const returnInput = document.getElementById("returnDate");
+    const priceDisplay = document.getElementById("totalPriceDisplay");
+
+    function calculatePrice() {
+        // Tarihleri al
+        const date1 = new Date(rentInput.value);
+        const date2 = new Date(returnInput.value);
+
+        // Tarihler geçerli mi ve Bitiş tarihi Başlangıçtan büyük mü?
+        if (!isNaN(date1) && !isNaN(date2) && date2 > date1) {
+
+            // Aradaki zaman farkını bul (Milisaniye cinsinden)
+            const diffTime = Math.abs(date2 - date1);
+
+            // Gün sayısına çevir
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+            // Toplam fiyatı hesapla
+            const total = diffDays * dailyPrice;
+
+            // Ekrana yazdır (Türk Lirası formatında)
+            priceDisplay.innerText = total.toLocaleString('tr-TR', { minimumFractionDigits: 2 }) + " ₺ (" + diffDays + " Gün)";
+
+            // Rengi mavi yap (Dikkat çeksin)
+            priceDisplay.style.color = "#0d6efd";
+        } else {
+            priceDisplay.innerText = "0,00 ₺";
+            priceDisplay.style.color = "black";
+        }
+    }
+
+    // Tarih seçildiğinde hesaplamayı tetikle
+    rentInput.addEventListener("change", calculatePrice);
+    returnInput.addEventListener("change", calculatePrice);
+</script>
