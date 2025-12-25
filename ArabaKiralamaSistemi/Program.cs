@@ -30,13 +30,13 @@ using (var scope = app.Services.CreateScope())
     var services = scope.ServiceProvider;
     try
     {
-        // A. Tabloları Oluştur (Eğer yoksa)
+        // A. Tabloları Oluştur
         var context = services.GetRequiredService<ArabaKiralamaSistemiContext>();
         context.Database.EnsureCreated();
         var authContext = services.GetRequiredService<AuthContext>();
         authContext.Database.EnsureCreated();
 
-        // B. Admin Rolü ve Yetkisi Ver (BURASI YENİ)
+        // B. Admin Rolü ve Yetkisi Ver
         var roleManager = services.GetRequiredService<RoleManager<IdentityRole>>();
         var userManager = services.GetRequiredService<UserManager<ArabaKiralamaSistemiUser>>();
 
@@ -46,8 +46,10 @@ using (var scope = app.Services.CreateScope())
             await roleManager.CreateAsync(new IdentityRole("Admin"));
         }
 
-        // Senin E-postanı Bul ve Admin Yap
-        string benimMailim = "burakkakdemir453@gmail.com"; // BURASI SENİN MAİLİN
+        // --- DÜZELTİLEN KISIM BURASI (2 'r' ile) ---
+        string benimMailim = "burakkakdemirr453@gmail.com";
+        // ---------------------------------------------
+
         var user = await userManager.FindByEmailAsync(benimMailim);
 
         if (user != null)
