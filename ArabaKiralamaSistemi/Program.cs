@@ -5,18 +5,19 @@ using ArabaKiralamaSistemi.Areas.Identity.Data;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// 1. Veritabanı Bağlantıları
-var connectionString = builder.Configuration.GetConnectionString("ArabaKiralamaSistemiContext") ?? throw new InvalidOperationException("Connection string 'ArabaKiralamaSistemiContext' not found.");
+// --- 1. POSTGRESQL BAĞLANTISI ---
+// Render'dan kopyaladığın linki aşağıdaki tırnakların içine yapıştır:
+var connectionString = "postgresql://araba_veritabani_user:NEUMjPs8i14GHthKX6Li9SpCSqgRXIK5@dpg-d56qhi0gjchc73973arg-a.frankfurt-postgres.render.com/araba_veritabani";
 
 builder.Services.AddDbContext<ArabaKiralamaSistemiContext>(options =>
-    options.UseSqlite(connectionString));
+    options.UseNpgsql(connectionString));
 
 builder.Services.AddDbContext<AuthContext>(options =>
-    options.UseSqlite(builder.Configuration.GetConnectionString("AuthContextConnection") ?? connectionString));
+    options.UseNpgsql(connectionString));
 
-// 2. Identity Ayarları
+// --- 2. IDENTITY AYARLARI ---
 builder.Services.AddDefaultIdentity<ArabaKiralamaSistemiUser>(options => options.SignIn.RequireConfirmedAccount = false)
-    .AddRoles<IdentityRole>() // Rolleri aktif et
+    .AddRoles<IdentityRole>()
     .AddEntityFrameworkStores<AuthContext>();
 
 builder.Services.AddControllersWithViews();
@@ -24,50 +25,49 @@ builder.Services.AddRazorPages();
 
 var app = builder.Build();
 
-// --- RENDER İÇİN OTOMATİK ADMİN OLUŞTURMA (HİLE KODU) ---
+// --- 3. OTOMATİK VERİTABANI VE ADMİN KURULUMU ---
 using (var scope = app.Services.CreateScope())
 {
     var services = scope.ServiceProvider;
     try
     {
-        // A. Tabloları Oluştur
         var context = services.GetRequiredService<ArabaKiralamaSistemiContext>();
         context.Database.EnsureCreated();
         var authContext = services.GetRequiredService<AuthContext>();
         authContext.Database.EnsureCreated();
 
-        // B. Admin Rolü ve Yetkisi Ver
         var roleManager = services.GetRequiredService<RoleManager<IdentityRole>>();
-        var userManager = services.GetRequiredService<UserManager<ArabaKiralamaSistemiUser>>();
-
-        // "Admin" rolü yoksa oluştur
         if (!await roleManager.RoleExistsAsync("Admin"))
         {
             await roleManager.CreateAsync(new IdentityRole("Admin"));
         }
 
-        // --- DÜZELTİLEN KISIM BURASI (2 'r' ile) ---
-        string benimMailim = "burakkakdemirr453@gmail.com";
-        // ---------------------------------------------
+        var userManager = services.GetRequiredService<UserManager<ArabaKiralamaSistemiUser>>();
+        string email = "burakkakdemirr453@gmail.com";
 
-        var user = await userManager.FindByEmailAsync(benimMailim);
-
-        if (user != null)
+        var user = await userManager.FindByEmailAsync(email);
+        if (user == null)
         {
-            // Kullanıcı bulunduysa ona Admin rolü ver
-            if (!await userManager.IsInRoleAsync(user, "Admin"))
+            user = new ArabaKiralamaSistemiUser
             {
-                await userManager.AddToRoleAsync(user, "Admin");
-            }
+                UserName = email,
+                Email = email,
+                EmailConfirmed = true
+            };
+            await userManager.CreateAsync(user, "Burak123!");
+        }
+
+        if (!await userManager.IsInRoleAsync(user, "Admin"))
+        {
+            await userManager.AddToRoleAsync(user, "Admin");
         }
     }
     catch (Exception ex)
     {
         var logger = services.GetRequiredService<ILogger<Program>>();
-        logger.LogError(ex, "Veritabanı veya Admin yetkisi oluşturulurken hata çıktı.");
+        logger.LogError(ex, "Veritabanı kurulum hatası!");
     }
 }
-// -------------------------------------------------------
 
 if (!app.Environment.IsDevelopment())
 {
@@ -77,16 +77,9 @@ if (!app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 app.UseStaticFiles();
-
 app.UseRouting();
-
 app.UseAuthentication();
 app.UseAuthorization();
-
-app.MapControllerRoute(
-    name: "default",
-    pattern: "{controller=Home}/{action=Index}/{id?}");
-
+app.MapControllerRoute(name: "default", pattern: "{controller=Home}/{action=Index}/{id?}");
 app.MapRazorPages();
-
 app.Run();
