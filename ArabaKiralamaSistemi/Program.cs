@@ -57,7 +57,20 @@ using (var scope = app.Services.CreateScope())
         await userManager.AddToRoleAsync(adminUser, "Admin");
     }
 }
-// --- OTOMATİK ADMİN OLUŞTURMA KODU (BİTİŞ) ---
 
+// --- RENDER İÇİN OTOMATİK VERİTABANI OLUŞTURMA (BAŞLANGIÇ) ---
+using (var scope = app.Services.CreateScope())
+{
+    var services = scope.ServiceProvider;
+
+    // 1. Arabalar Veritabanını Kur
+    var context = services.GetRequiredService<ArabaKiralamaSistemi.Data.ArabaKiralamaSistemiContext>();
+    context.Database.Migrate();
+
+    // 2. Kullanıcılar (Auth) Veritabanını Kur
+    var authContext = services.GetRequiredService<AuthContext>();
+    authContext.Database.Migrate();
+}
+// --- OTOMATİK OLUŞTURMA (BİTİŞ) ---
 app.Run(); // Bu satır zaten vardı, kodları bunun üstüne koy.
 app.Run();
