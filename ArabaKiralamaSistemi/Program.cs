@@ -58,19 +58,25 @@ using (var scope = app.Services.CreateScope())
     }
 }
 
-// --- RENDER İÇİN OTOMATİK VERİTABANI OLUŞTURMA (BAŞLANGIÇ) ---
+// --- RENDER İÇİN KESİN ÇÖZÜM: TABLOLARI ZORLA OLUŞTUR ---
 using (var scope = app.Services.CreateScope())
 {
     var services = scope.ServiceProvider;
+    try
+    {
+        // 1. Arabalar Veritabanını Zorla Kur
+        var context = services.GetRequiredService<ArabaKiralamaSistemi.Data.ArabaKiralamaSistemiContext>();
+        context.Database.EnsureCreated(); // Migrate yerine bunu kullanıyoruz
 
-    // 1. Arabalar Veritabanını Kur
-    var context = services.GetRequiredService<ArabaKiralamaSistemi.Data.ArabaKiralamaSistemiContext>();
-    context.Database.Migrate();
-
-    // 2. Kullanıcılar (Auth) Veritabanını Kur
-    var authContext = services.GetRequiredService<AuthContext>();
-    authContext.Database.Migrate();
+        // 2. Kullanıcılar (Auth) Veritabanını Zorla Kur
+        var authContext = services.GetRequiredService<AuthContext>();
+        authContext.Database.EnsureCreated(); // Tabloları yoktan var et!
+    }
+    catch (Exception ex)
+    {
+        // Hata olursa en azından loglarda görelim
+        var logger = services.GetRequiredService<ILogger<Program>>();
+        logger.LogError(ex, "Veritabanı oluşturulurken hata çıktı!");
+    }
 }
-// --- OTOMATİK OLUŞTURMA (BİTİŞ) ---
-app.Run(); // Bu satır zaten vardı, kodları bunun üstüne koy.
 app.Run();
