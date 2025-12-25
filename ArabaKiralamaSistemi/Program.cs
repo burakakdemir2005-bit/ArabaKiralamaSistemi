@@ -6,8 +6,17 @@ using ArabaKiralamaSistemi.Areas.Identity.Data;
 var builder = WebApplication.CreateBuilder(args);
 
 // --- 1. POSTGRESQL BAĞLANTISI ---
-// Render'dan kopyaladığın linki aşağıdaki tırnakların içine yapıştır:
-var connectionString = "postgresql://araba_veritabani_user:NEUMjPs8i14GHthKX6Li9SpCSqgRXIK5@dpg-d56qhi0gjchc73973arg-a.frankfurt-postgres.render.com/araba_veritabani";
+// Render PostgreSQL bilgilerini tek tek parçalayarak sisteme tanıtıyoruz
+var connectionString = new Npgsql.NpgsqlConnectionStringBuilder()
+{
+    Host = "dpg-d56qhi0gjchc73973arg-a.frankfurt-postgres.render.com",
+    Database = "araba_veritabani",
+    Username = "araba_veritabani_user",
+    Password = "NEUMjPs8i14GHthKX6Ll9SpCSqgRXIK5",
+    Port = 5432,
+    SslMode = Npgsql.SslMode.Require,
+    TrustServerCertificate = true
+}.ToString();
 
 builder.Services.AddDbContext<ArabaKiralamaSistemiContext>(options =>
     options.UseNpgsql(connectionString));
