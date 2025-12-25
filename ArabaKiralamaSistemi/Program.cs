@@ -5,9 +5,9 @@ using Microsoft.AspNetCore.Identity;
 using ArabaKiralamaSistemi.Areas.Identity.Data;
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddDbContext<ArabaKiralamaSistemiContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("ArabaKiralamaSistemiContext") ?? throw new InvalidOperationException("Connection string 'ArabaKiralamaSistemiContext' not found.")));
+    options.UseSqlite(builder.Configuration.GetConnectionString("ArabaKiralamaSistemiContext") ?? throw new InvalidOperationException("Connection string 'ArabaKiralamaSistemiContext' not found.")));
 builder.Services.AddDbContext<AuthContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("AuthContextConnection")));
+    options.UseSqlite(builder.Configuration.GetConnectionString("AuthContextConnection")));
 builder.Services.AddDefaultIdentity<ArabaKiralamaSistemiUser>(options => options.SignIn.RequireConfirmedAccount = false)
     .AddRoles<IdentityRole>() 
     .AddEntityFrameworkStores<AuthContext>();
