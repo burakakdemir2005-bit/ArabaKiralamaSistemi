@@ -1,27 +1,60 @@
-﻿using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using ArabaKiralamaSistemi.Data;
-using Microsoft.AspNetCore.Identity;
 using ArabaKiralamaSistemi.Areas.Identity.Data;
+
 var builder = WebApplication.CreateBuilder(args);
+
+// 1. Veritabanı Bağlantılarını Ayarla (SQLite)
+var connectionString = builder.Configuration.GetConnectionString("ArabaKiralamaSistemiContext") ?? throw new InvalidOperationException("Connection string 'ArabaKiralamaSistemiContext' not found.");
+
 builder.Services.AddDbContext<ArabaKiralamaSistemiContext>(options =>
-    options.UseSqlite(builder.Configuration.GetConnectionString("ArabaKiralamaSistemiContext") ?? throw new InvalidOperationException("Connection string 'ArabaKiralamaSistemiContext' not found.")));
+    options.UseSqlite(connectionString));
+
 builder.Services.AddDbContext<AuthContext>(options =>
-    options.UseSqlite(builder.Configuration.GetConnectionString("AuthContextConnection")));
+    options.UseSqlite(builder.Configuration.GetConnectionString("AuthContextConnection") ?? connectionString));
+
+// 2. Identity (Kullanıcı Giriş) Ayarları
 builder.Services.AddDefaultIdentity<ArabaKiralamaSistemiUser>(options => options.SignIn.RequireConfirmedAccount = false)
-    .AddRoles<IdentityRole>() 
+    .AddRoles<IdentityRole>() // Rolleri aktif et
     .AddEntityFrameworkStores<AuthContext>();
 
-// Add services to the container.
+// 3. MVC Controller ve View'leri ekle
 builder.Services.AddControllersWithViews();
 builder.Services.AddRazorPages();
+
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
+// --- RENDER İÇİN KESİN ÇÖZÜM: TABLOLARI EN BAŞTA OLUŞTUR ---
+// Bu blok uygulama çalışmaya başlamadan HEMEN ÖNCE veritabanını kurar.
+using (var scope = app.Services.CreateScope())
+{
+    var services = scope.ServiceProvider;
+    try
+    {
+        // Önce Arabalar Veritabanı
+        var context = services.GetRequiredService<ArabaKiralamaSistemiContext>();
+        context.Database.EnsureCreated();
+
+        // Sonra Kullanıcı (Auth) Veritabanı
+        var authContext = services.GetRequiredService<AuthContext>();
+        authContext.Database.EnsureCreated();
+
+        // (İsteğe Bağlı) Otomatik Admin Rolü Ekleme
+        // Eğer veritabanı boşsa hata vermesin diye try-catch içinde kalsın
+    }
+    catch (Exception ex)
+    {
+        var logger = services.GetRequiredService<ILogger<Program>>();
+        logger.LogError(ex, "Veritabanı oluşturulurken bir hata oluştu.");
+    }
+}
+// -------------------------------------------------------
+
+// 4. Middleware Ayarları (Standart)
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Home/Error");
-    // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
     app.UseHsts();
 }
 
@@ -30,53 +63,13 @@ app.UseStaticFiles();
 
 app.UseRouting();
 
-app.UseAuthorization();
+app.UseAuthentication(); // Giriş yapma (Önemli: Authorization'dan önce olmalı)
+app.UseAuthorization();  // Yetki kontrolü
 
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}");
+
 app.MapRazorPages();
-// --- OTOMATİK ADMİN OLUŞTURMA KODU (BAŞLANGIÇ) ---
-using (var scope = app.Services.CreateScope())
-{
-    var roleManager = scope.ServiceProvider.GetRequiredService<Microsoft.AspNetCore.Identity.RoleManager<Microsoft.AspNetCore.Identity.IdentityRole>>();
-    var userManager = scope.ServiceProvider.GetRequiredService<Microsoft.AspNetCore.Identity.UserManager<ArabaKiralamaSistemiUser>>();
 
-    // 1. "Admin" rolü yoksa oluştur
-    if (!await roleManager.RoleExistsAsync("Admin"))
-    {
-        await roleManager.CreateAsync(new Microsoft.AspNetCore.Identity.IdentityRole("Admin"));
-    }
-
-    // 2. Senin mail adresini bul ve Admin yap
-    // BURAYA KENDİ E-POSTANI YAZ 👇
-    var adminUser = await userManager.FindByEmailAsync("burakkakdemirr453@gmail.com");
-
-    if (adminUser != null && !await userManager.IsInRoleAsync(adminUser, "Admin"))
-    {
-        await userManager.AddToRoleAsync(adminUser, "Admin");
-    }
-}
-
-// --- RENDER İÇİN KESİN ÇÖZÜM: TABLOLARI ZORLA OLUŞTUR ---
-using (var scope = app.Services.CreateScope())
-{
-    var services = scope.ServiceProvider;
-    try
-    {
-        // 1. Arabalar Veritabanını Zorla Kur
-        var context = services.GetRequiredService<ArabaKiralamaSistemi.Data.ArabaKiralamaSistemiContext>();
-        context.Database.EnsureCreated(); // Migrate yerine bunu kullanıyoruz
-
-        // 2. Kullanıcılar (Auth) Veritabanını Zorla Kur
-        var authContext = services.GetRequiredService<AuthContext>();
-        authContext.Database.EnsureCreated(); // Tabloları yoktan var et!
-    }
-    catch (Exception ex)
-    {
-        // Hata olursa en azından loglarda görelim
-        var logger = services.GetRequiredService<ILogger<Program>>();
-        logger.LogError(ex, "Veritabanı oluşturulurken hata çıktı!");
-    }
-}
 app.Run();
