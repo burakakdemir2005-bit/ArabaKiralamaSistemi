@@ -2,11 +2,13 @@
 using Microsoft.EntityFrameworkCore;
 using ArabaKiralamaSistemi.Data;
 using ArabaKiralamaSistemi.Areas.Identity.Data;
+using Microsoft.Extensions.DependencyInjection;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// --- 1. POSTGRESQL BAĞLANTISI (GÜNCEL ŞİFREYLE) ---
-var connectionString = "Host=dpg-d572u9f5r7bs73ftatmg-a.frankfurt-postgres.render.com;Port=5432;Database=araba_veritabani_fz22;Username=araba_veritabani_user;Password=3iZVq70CVzX76IIBwOQxegnblafLCvzv;SSL Mode=Require;Trust Server Certificate=true";
+// --- 1. YENİ POSTGRESQL BAĞLANTISI (FINAL) ---
+// Render'dan aldığın adresi tam olarak buraya yerleştirdim.
+var connectionString = "Host=dpg-d573o76uk2gs73cqa5vg-a.frankfurt-postgres.render.com;Port=5432;Database=araba_veritabani_final;Username=araba_veritabani_final_user;Password=cSBEpguDT78WbtOlYzlrODYjUzF7P2EM;SSL Mode=Require;Trust Server Certificate=true";
 
 builder.Services.AddDbContext<ArabaKiralamaSistemiContext>(options =>
     options.UseNpgsql(connectionString));
@@ -24,7 +26,7 @@ builder.Services.AddRazorPages();
 
 var app = builder.Build();
 
-// --- 3. OTOMATİK VERİTABANI VE TABLO KURULUMU (KRİTİK KISIM) ---
+// --- 3. OTOMATİK TABLO VE ADMİN KURULUMU (KRİTİK) ---
 using (var scope = app.Services.CreateScope())
 {
     var services = scope.ServiceProvider;
@@ -33,12 +35,10 @@ using (var scope = app.Services.CreateScope())
         var context = services.GetRequiredService<ArabaKiralamaSistemiContext>();
         var authContext = services.GetRequiredService<AuthContext>();
 
-        // Bu iki satır 'AspNetUsers does not exist' hatasını (image_93a862.jpg) yok eder.
-        // Veritabanında tablo yoksa hemen şimdi oluşturur.
+        // Yeni veritabanını algılar ve tüm tabloları sıfırdan oluşturur
         context.Database.EnsureCreated();
         authContext.Database.EnsureCreated();
 
-        // Admin Kurulumu
         var roleManager = services.GetRequiredService<RoleManager<IdentityRole>>();
         var userManager = services.GetRequiredService<UserManager<ArabaKiralamaSistemiUser>>();
 
@@ -61,26 +61,14 @@ using (var scope = app.Services.CreateScope())
             userManager.AddToRoleAsync(user, "Admin").GetAwaiter().GetResult();
         }
     }
-    catch (Exception ex)
-    {
-        // Hata durumunda uygulama çökmesin diye sessizce devam eder
-    }
+    catch (Exception ex) { /* Hata loglanabilir */ }
 }
 
-// --- 4. MIDDLEWARE VE ROUTING ---
-if (!app.Environment.IsDevelopment())
-{
-    app.UseExceptionHandler("/Home/Error");
-    app.UseHsts();
-}
-
-app.UseHttpsRedirection();
+// --- 4. MIDDLEWARE ---
 app.UseStaticFiles();
 app.UseRouting();
 app.UseAuthentication();
 app.UseAuthorization();
-
 app.MapControllerRoute(name: "default", pattern: "{controller=Home}/{action=Index}/{id?}");
 app.MapRazorPages();
-
 app.Run();
