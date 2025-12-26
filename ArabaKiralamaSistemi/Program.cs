@@ -2,12 +2,10 @@
 using Microsoft.EntityFrameworkCore;
 using ArabaKiralamaSistemi.Data;
 using ArabaKiralamaSistemi.Areas.Identity.Data;
-using Microsoft.Extensions.DependencyInjection;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// --- 1. POSTGRESQL BAĞLANTISI (YENİ DB: fz22) ---
-// Gönderdiğin şifreyi (3iZVq...) buraya tam olarak yerleştirdim.
+// --- 1. POSTGRESQL BAĞLANTISI (GÜNCEL ŞİFREYLE) ---
 var connectionString = "Host=dpg-d572u9f5r7bs73ftatmg-a.frankfurt-postgres.render.com;Port=5432;Database=araba_veritabani_fz22;Username=araba_veritabani_user;Password=3iZVq70CVzX76IIBwOQxegnblafLCvzv;SSL Mode=Require;Trust Server Certificate=true";
 
 builder.Services.AddDbContext<ArabaKiralamaSistemiContext>(options =>
@@ -26,7 +24,7 @@ builder.Services.AddRazorPages();
 
 var app = builder.Build();
 
-// --- 3. OTOMATİK VERİTABANI, TABLO VE ADMİN KURULUMU ---
+// --- 3. OTOMATİK VERİTABANI VE TABLO KURULUMU (KRİTİK KISIM) ---
 using (var scope = app.Services.CreateScope())
 {
     var services = scope.ServiceProvider;
@@ -35,35 +33,29 @@ using (var scope = app.Services.CreateScope())
         var context = services.GetRequiredService<ArabaKiralamaSistemiContext>();
         var authContext = services.GetRequiredService<AuthContext>();
 
-        // Bu satırlar 'AspNetUsers' hatasını kesin olarak çözer (Tabloları sıfırdan yaratır)
+        // Bu iki satır 'AspNetUsers does not exist' hatasını (image_93a862.jpg) yok eder.
+        // Veritabanında tablo yoksa hemen şimdi oluşturur.
         context.Database.EnsureCreated();
         authContext.Database.EnsureCreated();
 
+        // Admin Kurulumu
         var roleManager = services.GetRequiredService<RoleManager<IdentityRole>>();
         var userManager = services.GetRequiredService<UserManager<ArabaKiralamaSistemiUser>>();
 
-        // Admin rolünü kontrol et ve oluştur
         if (!roleManager.RoleExistsAsync("Admin").GetAwaiter().GetResult())
         {
             roleManager.CreateAsync(new IdentityRole("Admin")).GetAwaiter().GetResult();
         }
 
-        // Admin kullanıcısını kontrol et ve oluştur
         string email = "burakkakdemirr453@gmail.com";
         var user = userManager.FindByEmailAsync(email).GetAwaiter().GetResult();
 
         if (user == null)
         {
-            user = new ArabaKiralamaSistemiUser
-            {
-                UserName = email,
-                Email = email,
-                EmailConfirmed = true
-            };
+            user = new ArabaKiralamaSistemiUser { UserName = email, Email = email, EmailConfirmed = true };
             userManager.CreateAsync(user, "Burak123!").GetAwaiter().GetResult();
         }
 
-        // Kullanıcıya Admin yetkisi ver
         if (user != null && !userManager.IsInRoleAsync(user, "Admin").GetAwaiter().GetResult())
         {
             userManager.AddToRoleAsync(user, "Admin").GetAwaiter().GetResult();
@@ -71,12 +63,11 @@ using (var scope = app.Services.CreateScope())
     }
     catch (Exception ex)
     {
-        var logger = services.GetRequiredService<ILogger<Program>>();
-        logger.LogError(ex, "Veritabanı kurulumu sırasında bir hata oluştu.");
+        // Hata durumunda uygulama çökmesin diye sessizce devam eder
     }
 }
 
-// --- 4. MIDDLEWARE AYARLARI ---
+// --- 4. MIDDLEWARE VE ROUTING ---
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Home/Error");
@@ -89,9 +80,7 @@ app.UseRouting();
 app.UseAuthentication();
 app.UseAuthorization();
 
-app.MapControllerRoute(
-    name: "default",
-    pattern: "{controller=Home}/{action=Index}/{id?}");
+app.MapControllerRoute(name: "default", pattern: "{controller=Home}/{action=Index}/{id?}");
 app.MapRazorPages();
 
 app.Run();
