@@ -6,7 +6,7 @@ using ArabaKiralamaSistemi.Areas.Identity.Data;
 var builder = WebApplication.CreateBuilder(args);
 
 // --- 1. POSTGRESQL BAĞLANTISI ---
-var connectionString = "Host=dpg-d56qhi0gjchc73973arg-a.frankfurt-postgres.render.com;Port=5432;Database=araba_veritabani;Username=araba_veritabani_user;Password=NEUMjPs8i14GHthKX6Li9SpCSqgRXIK5;SSL Mode=Require;Trust Server Certificate=true";
+var connectionString ="Host=dpg-d56qhi0gjchc73973arg-a.frankfurt-postgres.render.com;Port=5432;Database=araba_veritabani;Username=araba_veritabani_user;Password=NEUMjPs8i14GHthKX6Li9SpCSqgRXIK5;SSL Mode=Require;Trust Server Certificate=true";
 
 builder.Services.AddDbContext<ArabaKiralamaSistemiContext>(options =>
     options.UseNpgsql(connectionString));
